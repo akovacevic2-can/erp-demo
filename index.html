@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gear Shop ERP/MES Prototype</title>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --panel: #ffffff;
+      --ink: #17212b;
+      --muted: #64748b;
+      --line: #d9e1ea;
+      --brand: #1f4f7a;
+      --brand2: #2f80bd;
+      --ok: #2e7d32;
+      --warn: #b7791f;
+      --bad: #b42318;
+      --soft: #edf4fb;
+      --soft2: #f8fafc;
+      --shadow: 0 12px 35px rgba(15, 23, 42, .08);
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    .app {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 100vh;
+    }
+    aside {
+      background: #0f2436;
+      color: white;
+      padding: 24px 18px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+    .logo {
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: .3px;
+      line-height: 1.2;
+      margin-bottom: 26px;
+    }
+    .logo small {
+      display: block;
+      color: #9fb6ca;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 6px;
+    }
+    .nav button {
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      padding: 13px 13px;
+      margin: 5px 0;
+      text-align: left;
+      color: #d9e7f5;
+      background: transparent;
+      cursor: pointer;
+      font-weight: 650;
+      font-size: 14px;
+    }
+    .nav button:hover, .nav button.active {
+      background: #173a57;
+      color: white;
+    }
+    .side-card {
+      margin-top: 26px;
+      padding: 14px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.11);
+      border-radius: 14px;
+      font-size: 13px;
+      color: #c8d8e6;
+      line-height: 1.45;
+    }
+    main { padding: 26px; }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 22px;
+      gap: 16px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 25px;
+      letter-spacing: -.4px;
+    }
+    .subtitle {
+      color: var(--muted);
+      margin-top: 5px;
+      font-size: 14px;
+    }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    button.primary, button.secondary, button.danger, .file-label {
+      border: 0;
+      border-radius: 12px;
+      padding: 11px 14px;
+      font-weight: 750;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    button.primary, .file-label { background: var(--brand); color: white; }
+    button.secondary { background: white; border: 1px solid var(--line); color: var(--ink); }
+    button.danger { background: #fff1f0; color: var(--bad); border: 1px solid #ffd1cd; }
+    button.primary:hover, .file-label:hover { background: #183d5e; }
+    .grid4 {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+    .grid3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+    .metric .label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .metric .value {
+      font-size: 30px;
+      font-weight: 850;
+      letter-spacing: -.8px;
+    }
+    .metric .hint {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 7px;
+    }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .status.ok { color: var(--ok); background: #eaf7eb; }
+    .status.warn { color: var(--warn); background: #fff7e8; }
+    .status.bad { color: var(--bad); background: #fff0ef; }
+    .status.blue { color: #145da0; background: #e8f3ff; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th {
+      text-align: left;
+      color: #52616f;
+      font-size: 12px;
+      border-bottom: 1px solid var(--line);
+      padding: 10px 9px;
+      background: var(--soft2);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    td {
+      border-bottom: 1px solid #edf1f5;
+      padding: 10px 9px;
+      vertical-align: middle;
+    }
+    tr:hover td { background: #fbfdff; }
+    .table-wrap {
+      overflow: auto;
+      max-height: 580px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 9px 10px;
+      font: inherit;
+      font-size: 13px;
+      background: white;
+    }
+    input.small { width: 80px; }
+    textarea { min-height: 84px; resize: vertical; }
+    .section { display: none; }
+    .section.active { display: block; }
+    .split {
+      display: grid;
+      grid-template-columns: 330px 1fr;
+      gap: 16px;
+    }
+    .part-tree .node {
+      padding: 11px 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      margin-bottom: 8px;
+      background: white;
+      cursor: pointer;
+    }
+    .part-tree .node.active {
+      border-color: var(--brand2);
+      background: var(--soft);
+    }
+    .node strong { display: block; font-size: 13px; }
+    .node span { color: var(--muted); font-size: 12px; }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .tab {
+      border: 1px solid var(--line);
+      background: white;
+      padding: 9px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 800;
+      font-size: 12px;
+      color: #334155;
+    }
+    .tab.active {
+      background: var(--brand);
+      color: white;
+      border-color: var(--brand);
+    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .muted { color: var(--muted); }
+    .warning-list {
+      display: grid;
+      gap: 9px;
+    }
+    .warning-item {
+      padding: 11px 12px;
+      border-radius: 12px;
+      background: #fff8e8;
+      border: 1px solid #f3d18d;
+      color: #6b4406;
+      font-size: 13px;
+      font-weight: 650;
+    }
+    .ok-item {
+      padding: 11px 12px;
+      border-radius: 12px;
+      background: #eaf7eb;
+      border: 1px solid #b7e0bd;
+      color: #1f6b2b;
+      font-size: 13px;
+      font-weight: 650;
+    }
+    .gantt {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: white;
+    }
+    .gantt-header, .gantt-row {
+      display: grid;
+      grid-template-columns: 170px repeat(10, 115px);
+      min-width: 1320px;
+    }
+    .gantt-header div {
+      background: var(--soft2);
+      border-bottom: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      padding: 10px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #52616f;
+    }
+    .gantt-row {
+      min-height: 64px;
+      border-bottom: 1px solid #edf1f5;
+      position: relative;
+    }
+    .gantt-row .machine {
+      padding: 18px 10px;
+      border-right: 1px solid var(--line);
+      background: #fbfdff;
+      font-weight: 850;
+      font-size: 13px;
+    }
+    .gantt-row .cell {
+      border-right: 1px solid #edf1f5;
+      background: repeating-linear-gradient(
+        90deg,
+        #fff,
+        #fff 56px,
+        #fafcff 56px,
+        #fafcff 57px
+      );
+    }
+    .bar {
+      position: absolute;
+      height: 34px;
+      top: 15px;
+      border-radius: 10px;
+      color: white;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 800;
+      box-shadow: 0 6px 14px rgba(15,23,42,.18);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .bar.blue { background: #236fa8; }
+    .bar.green { background: #2d7d46; }
+    .bar.orange { background: #bf7a16; }
+    .bar.red { background: #b42318; }
+    .cost-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .cost-line {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px dashed #d6dee8;
+      padding: 11px 0;
+      font-size: 14px;
+    }
+    .cost-line strong { font-size: 18px; }
+    .traveler {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 22px;
+      max-width: 1050px;
+      margin: auto;
+    }
+    .traveler-title {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 3px solid #17212b;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+      gap: 20px;
+    }
+    .traveler-title h2 { margin: 0; font-size: 25px; }
+    .traveler-meta {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .meta-box {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+      min-height: 66px;
+    }
+    .meta-box small {
+      display: block;
+      color: var(--muted);
+      font-weight: 750;
+      margin-bottom: 5px;
+    }
+    .checkline {
+      display: flex;
+      gap: 22px;
+      flex-wrap: wrap;
+      margin: 13px 0;
+      font-weight: 700;
+    }
+    .checkbox {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid #334155;
+      border-radius: 4px;
+      vertical-align: -4px;
+      margin-right: 6px;
+    }
+    .hidden { display: none !important; }
+    .pillrow {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 10px 0;
+    }
+    .pill {
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: #eef5fb;
+      border: 1px solid #cfe1ef;
+      color: #294b63;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .field label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .toast {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      background: #102437;
+      color: white;
+      padding: 13px 16px;
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transform: translateY(12px);
+      transition: .25s;
+      z-index: 50;
+      font-weight: 750;
+      max-width: 420px;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    @media print {
+      body { background: white; }
+      aside, .topbar, .actions, .nav, .side-card, .tabs, button, .no-print { display: none !important; }
+      .app { display: block; }
+      main { padding: 0; }
+      .section { display: none !important; }
+      .section.active { display: block !important; }
+      .card, .traveler { box-shadow: none; border: none; }
+      .table-wrap { max-height: none; overflow: visible; }
+    }
+    @media (max-width: 1050px) {
+      .app { grid-template-columns: 1fr; }
+      aside { position: static; height: auto; }
+      .grid4, .grid3, .split, .cost-grid, .form-grid, .traveler-meta {
+        grid-template-columns: 1fr;
+      }
+      .topbar { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <div class="logo">
+        Gear Shop ERP/MES
+        <small>Order → BOM → Cost → Traveler → Schedule</small>
+      </div>
+
+      <div class="nav">
+        <button class="active" onclick="showSection('dashboard', this)">Order Dashboard</button>
+        <button onclick="showSection('bom', this)">BOM Import & Edit</button>
+        <button onclick="showSection('routing', this)">BOM & Routing Manager</button>
+        <button onclick="showSection('costing', this)">Cost Summary</button>
+        <button onclick="showSection('traveler', this)">Shop Traveler</button>
+        <button onclick="showSection('schedule', this)">Live Shop Schedule</button>
+        <button onclick="showSection('machines', this)">Machine Rates</button>
+      </div>
+
+      <div class="side-card">
+        <strong>Prototype mode</strong><br />
+        This is a compiled static demo. Edit BOM rows, classify MAKE/BUY, recalculate cost, and view traveler/schedule mockups.
+      </div>
+    </aside>
+
+    <main>
+      <section id="dashboard" class="section active">
+        <div class="topbar">
+          <div>
+            <h1>Order Dashboard</h1>
+            <div class="subtitle">Production manager view of active jobs, delivery risk, and bottlenecks.</div>
+          </div>
+          <div class="actions">
+            <button class="primary" onclick="showSectionByName('bom')">Import BOM</button>
+            <button class="secondary" onclick="showSectionByName('schedule')">View Schedule</button>
+          </div>
+        </div>
+
+        <div class="grid4">
+          <div class="card metric"><div class="label">Active Orders</div><div class="value">12</div><div class="hint">5 released to floor</div></div>
+          <div class="card metric"><div class="label">Due This Week</div><div class="value">4</div><div class="hint">2 need QC today</div></div>
+          <div class="card metric"><div class="label">Late Risk</div><div class="value">2</div><div class="hint">Grinding and hobbing bottleneck</div></div>
+          <div class="card metric"><div class="label">Open Travelers</div><div class="value">37</div><div class="hint">11 waiting for next operation</div></div>
+        </div>
+
+        <div class="card">
+          <h3>Active Orders</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Order</th><th>Customer</th><th>Product</th><th>Qty</th><th>Required Date</th><th>Status</th><th>Est. Finish</th><th>Risk</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><strong>SO-2026-1045</strong></td><td>ABC Hydrovac</td><td>GBX-500 Gearbox</td><td>4</td><td>2026-07-15</td><td><span class="status blue">Released</span></td><td>2026-07-12</td><td><span class="status ok">OK</span></td></tr>
+                <tr><td><strong>SO-2026-1048</strong></td><td>Prairie Vac</td><td>GBX-700 Gearbox</td><td>2</td><td>2026-07-18</td><td><span class="status warn">In Production</span></td><td>2026-07-21</td><td><span class="status bad">Late</span></td></tr>
+                <tr><td><strong>SO-2026-1051</strong></td><td>Northline</td><td>Idler Shaft Assembly</td><td>10</td><td>2026-07-25</td><td><span class="status blue">Draft</span></td><td>Not scheduled</td><td><span class="status warn">Needs BOM</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="bom" class="section">
+        <div class="topbar">
+          <div>
+            <h1>BOM Import & On-the-Fly Edit</h1>
+            <div class="subtitle">Upload or paste a BOM, edit every component before saving to the live assembly BOM.</div>
+          </div>
+          <div class="actions">
+            <label class="file-label">
+              Upload CSV
+              <input id="csvInput" type="file" accept=".csv" class="hidden" onchange="handleCsvUpload(event)" />
+            </label>
+            <button class="secondary" onclick="loadSampleBom()">Load Sample BOM</button>
+            <button class="primary" onclick="validateBom()">Validate BOM</button>
+            <button class="primary" onclick="commitBom()">Commit BOM</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="form-grid">
+            <div class="field"><label>Assembly Part Number</label><input id="assemblyPart" value="GBX-500" /></div>
+            <div class="field"><label>Assembly Description</label><input value="Hydrovac Gearbox Assembly" /></div>
+            <div class="field"><label>Order Quantity</label><input id="orderQty" type="number" value="4" onchange="recalculateAll()" /></div>
+            <div class="field"><label>Required Delivery</label><input type="date" value="2026-07-15" /></div>
+          </div>
+
+          <div class="pillrow">
+            <span class="pill">Editable import staging area</span>
+            <span class="pill">MAKE / BUY / VIRTUAL dropdown</span>
+            <span class="pill">Missing cost warnings</span>
+            <span class="pill">Routing link warnings</span>
+          </div>
+
+          <div class="table-wrap">
+            <table id="bomTable">
+              <thead>
+                <tr>
+                  <th>Include</th>
+                  <th>Part Number</th>
+                  <th>Description</th>
+                  <th>Type</th>
+                  <th>Qty / Assy</th>
+                  <th>Unit Cost</th>
+                  <th>Weight lbs</th>
+                  <th>Vendor</th>
+                  <th>Routing</th>
+                  <th>Warning</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <div class="actions" style="margin-top:14px;">
+            <button class="secondary" onclick="addBomRow()">Add Component</button>
+            <button class="secondary" onclick="recalculateAll()">Recalculate</button>
+          </div>
+        </div>
+
+        <div class="grid3" style="margin-top:16px;">
+          <div class="card metric"><div class="label">BOM Lines</div><div class="value" id="metricBomLines">0</div><div class="hint">Included components</div></div>
+          <div class="card metric"><div class="label">MAKE Items</div><div class="value" id="metricMakeItems">0</div><div class="hint">Traveler required</div></div>
+          <div class="card metric"><div class="label">Warnings</div><div class="value" id="metricWarnings">0</div><div class="hint">Fix before release</div></div>
+        </div>
+      </section>
+
+      <section id="routing" class="section">
+        <div class="topbar">
+          <div>
+            <h1>BOM & Routing Manager</h1>
+            <div class="subtitle">Map parts to BOM structures and manufacturing operations.</div>
+          </div>
+          <div class="actions">
+            <button class="primary" onclick="addRoutingRow()">Add Routing Step</button>
+            <button class="secondary" onclick="showSectionByName('costing')">Cost Preview</button>
+          </div>
+        </div>
+
+        <div class="split">
+          <div class="card part-tree">
+            <h3>Assembly Tree</h3>
+            <div class="node active"><strong>GBX-500</strong><span>Hydrovac gearbox assembly</span></div>
+            <div class="node"><strong>GEAR-42T-6M</strong><span>MAKE · Gear routing exists</span></div>
+            <div class="node"><strong>SHAFT-INPUT-500</strong><span>MAKE · Routing exists</span></div>
+            <div class="node"><strong>BRG-6312</strong><span>BUY · Bearing</span></div>
+            <div class="node"><strong>SEAL-500</strong><span>BUY · Seal kit</span></div>
+          </div>
+
+          <div class="card">
+            <div class="tabs">
+              <button class="tab active" onclick="showTab('routingTabBom', this)">BOM</button>
+              <button class="tab" onclick="showTab('routingTabRouting', this)">Routing</button>
+              <button class="tab" onclick="showTab('routingTabValidation', this)">Validation</button>
+            </div>
+
+            <div id="routingTabBom" class="tab-panel active">
+              <h3>Live BOM for GBX-500</h3>
+              <div class="table-wrap">
+                <table id="bomSummaryTable">
+                  <thead><tr><th>Part</th><th>Description</th><th>Type</th><th>Qty / Assy</th><th>Cost</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div id="routingTabRouting" class="tab-panel">
+              <h3>Routing for GEAR-42T-6M</h3>
+              <div class="table-wrap">
+                <table id="routingTable">
+                  <thead>
+                    <tr><th>Step</th><th>Work Center</th><th>Operation</th><th>Setup Min</th><th>Cycle Min/Pc</th><th>QC</th><th></th></tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div id="routingTabValidation" class="tab-panel">
+              <h3>Validation Results</h3>
+              <div id="validationList" class="warning-list"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="costing" class="section">
+        <div class="topbar">
+          <div>
+            <h1>Cost Summary</h1>
+            <div class="subtitle">Cost rollup based on BOM quantity, MAKE routings, machine rates, and final allocations.</div>
+          </div>
+          <div class="actions">
+            <button class="primary" onclick="recalculateAll()">Recalculate Cost</button>
+            <button class="secondary" onclick="window.print()">Print Summary</button>
+          </div>
+        </div>
+
+        <div class="grid3">
+          <div class="card metric"><div class="label">Order Qty</div><div class="value" id="costQty">4</div><div class="hint">Assemblies</div></div>
+          <div class="card metric"><div class="label">Ready Cost</div><div class="value" id="costTotalMetric">$0</div><div class="hint">Before margin</div></div>
+          <div class="card metric"><div class="label">Cost / Gearbox</div><div class="value" id="costEachMetric">$0</div><div class="hint">Total divided by order qty</div></div>
+        </div>
+
+        <div class="cost-grid">
+          <div class="card">
+            <h3>Cost Breakdown</h3>
+            <div class="cost-line"><span>BUY Material</span><strong id="buyCost">$0</strong></div>
+            <div class="cost-line"><span>MAKE Material</span><strong id="makeMatCost">$0</strong></div>
+            <div class="cost-line"><span>Setup Cost</span><strong id="setupCost">$0</strong></div>
+            <div class="cost-line"><span>Run Cost</span><strong id="runCost">$0</strong></div>
+            <div class="cost-line"><span>Assembly Labor</span><strong id="assemblyCost">$780</strong></div>
+            <div class="cost-line"><span>Paint</span><strong id="paintCost">$320</strong></div>
+            <div class="cost-line"><span>Packaging / Crating</span><strong id="packCost">$450</strong></div>
+            <div class="cost-line"><span>Total Cost</span><strong id="grandTotal">$0</strong></div>
+          </div>
+
+          <div class="card">
+            <h3>MAKE Part Process Cost</h3>
+            <div class="table-wrap">
+              <table id="processCostTable">
+                <thead><tr><th>Part</th><th>Qty</th><th>Setup</th><th>Run</th><th>Material</th><th>Total</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="traveler" class="section">
+        <div class="topbar">
+          <div>
+            <h1>Digital / Printable Shop Traveler</h1>
+            <div class="subtitle">Generated from the MAKE part routing snapshot at order release.</div>
+          </div>
+          <div class="actions">
+            <button class="primary" onclick="window.print()">Print Traveler</button>
+            <button class="secondary" onclick="showSectionByName('schedule')">Schedule Batch</button>
+          </div>
+        </div>
+
+        <div class="traveler">
+          <div class="traveler-title">
+            <div>
+              <h2>SHOP FLOOR TRAVELER</h2>
+              <div class="muted">Batch: SO-2026-1045-GEAR-42T-001</div>
+            </div>
+            <div style="text-align:right;">
+              <strong>GBX-500</strong><br />
+              <span class="muted">ABC Hydrovac</span>
+            </div>
+          </div>
+
+          <div class="traveler-meta">
+            <div class="meta-box"><small>Part Number</small><strong>GEAR-42T-6M</strong></div>
+            <div class="meta-box"><small>Description</small><strong>42T Gear, 6 Module</strong></div>
+            <div class="meta-box"><small>Quantity</small><strong id="travelerQty">4</strong></div>
+            <div class="meta-box"><small>Required Date</small><strong>2026-07-15</strong></div>
+          </div>
+
+          <div class="checkline">
+            <span><span class="checkbox"></span> Material Pulled</span>
+            <span><span class="checkbox"></span> Drawing Attached</span>
+            <span><span class="checkbox"></span> Certs Attached</span>
+            <span>Heat/Lot #: ___________________</span>
+          </div>
+
+          <div class="table-wrap">
+            <table id="travelerTable">
+              <thead><tr><th>Step</th><th>Work Center</th><th>Operation</th><th>Setup</th><th>Cycle</th><th>Operator Sign-Off</th><th>QC</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <h3>Operator Notes</h3>
+          <div style="height:90px;border:1px solid #cbd5e1;border-radius:12px;"></div>
+
+          <div class="checkline">
+            <span><span class="checkbox"></span> Accepted</span>
+            <span><span class="checkbox"></span> Rework Required</span>
+            <span><span class="checkbox"></span> Scrap</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="schedule" class="section">
+        <div class="topbar">
+          <div>
+            <h1>Live Shop Schedule</h1>
+            <div class="subtitle">Gantt-style machine loading across the shop. Based on 8-hour shift capacity.</div>
+          </div>
+          <div class="actions">
+            <button class="primary" onclick="rebuildGantt()">Recalculate Schedule</button>
+            <button class="secondary" onclick="showSectionByName('traveler')">Open Traveler</button>
+          </div>
+        </div>
+
+        <div class="grid3">
+          <div class="card metric"><div class="label">Bottleneck</div><div class="value" style="font-size:24px;">GRIND-01</div><div class="hint">Highest loaded work center</div></div>
+          <div class="card metric"><div class="label">Estimated Finish</div><div class="value" style="font-size:24px;" id="finishDate">Jul 10</div><div class="hint">Compared to Jul 15 delivery</div></div>
+          <div class="card metric"><div class="label">Delivery Risk</div><div class="value" style="font-size:24px;" id="riskText">OK</div><div class="hint">Based on calculated finish</div></div>
+        </div>
+
+        <div class="card">
+          <h3>Machine Timeline</h3>
+          <div class="gantt" id="gantt"></div>
+        </div>
+      </section>
+
+      <section id="machines" class="section">
+        <div class="topbar">
+          <div>
+            <h1>Machine Rates</h1>
+            <div class="subtitle">Edit machine ID, base rate, coefficient, and burdened rate.</div>
+          </div>
+          <div class="actions">
+            <button class="primary" onclick="addMachineRow()">Add Machine</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="table-wrap">
+            <table id="machineTable">
+              <thead><tr><th>Machine ID</th><th>Name</th><th>Base Rate</th><th>Coefficient</th><th>Burdened Rate</th><th>Constraint</th><th></th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let bomRows = [
+      { include: true, part: "GEAR-42T-6M", desc: "42 Tooth Gear, 6 Module, 26° PA", type: "MAKE", qty: 1, cost: 145.00, weight: 18.5, vendor: "", routing: "GEAR-STD" },
+      { include: true, part: "SHAFT-INPUT-500", desc: "Input shaft", type: "MAKE", qty: 1, cost: 88.00, weight: 12.2, vendor: "", routing: "SHAFT-STD" },
+      { include: true, part: "BRG-6312", desc: "Bearing 6312", type: "BUY", qty: 2, cost: 42.00, weight: 1.1, vendor: "Applied" , routing: "" },
+      { include: true, part: "SEAL-500", desc: "Seal kit", type: "BUY", qty: 1, cost: 36.50, weight: .3, vendor: "Motion", routing: "" },
+      { include: true, part: "BOLT-1/2-13", desc: "Socket head cap screw", type: "BUY", qty: 12, cost: 1.25, weight: .06, vendor: "Fastenal", routing: "" },
+      { include: true, part: "PACK-GROUP", desc: "Virtual packaging group", type: "VIRTUAL", qty: 1, cost: 0, weight: 0, vendor: "", routing: "" }
+    ];
+
+    let routingRows = [
+      { step: 10, wc: "LATHE-01", op: "Turn gear blank", setup: 45, cycle: 12, qc: false },
+      { step: 20, wc: "HOB-01", op: "Gear hobbing", setup: 60, cycle: 18, qc: false },
+      { step: 30, wc: "SHAPE-01", op: "Internal shaping", setup: 45, cycle: 10, qc: false },
+      { step: 40, wc: "QC-01", op: "In-process inspection", setup: 15, cycle: 3, qc: true },
+      { step: 50, wc: "HT-OUT", op: "Heat treat outsource", setup: 0, cycle: 0, qc: false },
+      { step: 60, wc: "LATHE-02", op: "Hard turning", setup: 30, cycle: 8, qc: false },
+      { step: 70, wc: "GRIND-01", op: "Gear grinding", setup: 60, cycle: 15, qc: false },
+      { step: 80, wc: "QC-FINAL", op: "Final QC", setup: 15, cycle: 5, qc: true }
+    ];
+
+    let machines = [
+      { code: "LATHE-01", name: "CNC Lathe 1", base: 95, coeff: 1.3, constraint: "" },
+      { code: "LATHE-02", name: "CNC Lathe 2", base: 100, coeff: 1.3, constraint: "" },
+      { code: "HOB-01", name: "Gear Hobber", base: 125, coeff: 1.3, constraint: "" },
+      { code: "SHAPE-01", name: "Gear Shaper", base: 120, coeff: 1.3, constraint: "" },
+      { code: "GRIND-01", name: "Gear Grinder", base: 145, coeff: 1.3, constraint: "Precision bottleneck" },
+      { code: "QC-01", name: "Inspection", base: 85, coeff: 1.3, constraint: "" },
+      { code: "QC-FINAL", name: "Final Inspection", base: 85, coeff: 1.3, constraint: "" },
+      { code: "HT-OUT", name: "Heat Treat Outsource", base: 0, coeff: 1.0, constraint: "Vendor lead time" }
+    ];
+
+    function money(v) {
+      return "$" + Number(v || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 2600);
+    }
+
+    function showSection(id, btn) {
+      document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+      document.querySelectorAll(".nav button").forEach(b => b.classList.remove("active"));
+      if (btn) btn.classList.add("active");
+      recalculateAll();
+    }
+
+    function showSectionByName(id) {
+      const buttons = [...document.querySelectorAll(".nav button")];
+      const btn = buttons.find(b => b.getAttribute("onclick")?.includes("'" + id + "'"));
+      showSection(id, btn);
+    }
+
+    function showTab(id, btn) {
+      const card = btn.closest(".card");
+      card.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      card.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById(id).classList.add("active");
+    }
+
+    function validateBomRows() {
+      return bomRows.map(r => {
+        let warnings = [];
+        if (!r.part) warnings.push("Missing part number");
+        if (!r.qty || Number(r.qty) <= 0) warnings.push("Invalid quantity");
+        if (r.type === "BUY" && (!r.cost || Number(r.cost) <= 0)) warnings.push("BUY item missing unit cost");
+        if (r.type === "MAKE" && !r.routing) warnings.push("MAKE item missing routing");
+        if (r.type === "VIRTUAL" && Number(r.cost) > 0) warnings.push("Virtual component should usually have zero direct cost");
+        return warnings.join("; ");
+      });
+    }
+
+    function renderBom() {
+      const tbody = document.querySelector("#bomTable tbody");
+      tbody.innerHTML = "";
+      const warnings = validateBomRows();
+      bomRows.forEach((r, i) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><input type="checkbox" ${r.include ? "checked" : ""} onchange="bomRows[${i}].include=this.checked; recalculateAll();" /></td>
+          <td><input value="${r.part}" onchange="bomRows[${i}].part=this.value; recalculateAll();" /></td>
+          <td><input value="${r.desc}" onchange="bomRows[${i}].desc=this.value; recalculateAll();" /></td>
+          <td>
+            <select onchange="bomRows[${i}].type=this.value; recalculateAll();">
+              ${["MAKE","BUY","ASSEMBLY","VIRTUAL","SUPPLIED","OUTSOURCED"].map(t => `<option ${r.type===t?"selected":""}>${t}</option>`).join("")}
+            </select>
+          </td>
+          <td><input type="number" step="0.0001" value="${r.qty}" onchange="bomRows[${i}].qty=Number(this.value); recalculateAll();" /></td>
+          <td><input type="number" step="0.01" value="${r.cost}" onchange="bomRows[${i}].cost=Number(this.value); recalculateAll();" /></td>
+          <td><input type="number" step="0.01" value="${r.weight}" onchange="bomRows[${i}].weight=Number(this.value); recalculateAll();" /></td>
+          <td><input value="${r.vendor}" onchange="bomRows[${i}].vendor=this.value;" /></td>
+          <td><input value="${r.routing}" onchange="bomRows[${i}].routing=this.value; recalculateAll();" /></td>
+          <td>${warnings[i] ? `<span class="status warn">${warnings[i]}</span>` : `<span class="status ok">OK</span>`}</td>
+          <td><button class="danger" onclick="removeBomRow(${i})">Remove</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById("metricBomLines").textContent = bomRows.filter(r => r.include).length;
+      document.getElementById("metricMakeItems").textContent = bomRows.filter(r => r.include && (r.type === "MAKE" || r.type === "ASSEMBLY")).length;
+      document.getElementById("metricWarnings").textContent = warnings.filter(Boolean).length;
+      renderBomSummary();
+      renderValidation();
+    }
+
+    function renderBomSummary() {
+      const tbody = document.querySelector("#bomSummaryTable tbody");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+      bomRows.filter(r => r.include).forEach(r => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td><strong>${r.part}</strong></td><td>${r.desc}</td><td>${r.type}</td><td>${r.qty}</td><td>${money(r.cost)}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function addBomRow() {
+      bomRows.push({ include: true, part: "", desc: "", type: "BUY", qty: 1, cost: 0, weight: 0, vendor: "", routing: "" });
+      renderBom();
+      showToast("New BOM row added.");
+    }
+
+    function removeBomRow(i) {
+      bomRows.splice(i, 1);
+      recalculateAll();
+      showToast("BOM row removed.");
+    }
+
+    function loadSampleBom() {
+      bomRows = [
+        { include: true, part: "GEAR-42T-6M", desc: "42 Tooth Gear, 6 Module, 26° PA", type: "MAKE", qty: 1, cost: 145, weight: 18.5, vendor: "", routing: "GEAR-STD" },
+        { include: true, part: "GEAR-IDLER-46T", desc: "46 Tooth Idler Gear", type: "MAKE", qty: 1, cost: 162, weight: 22, vendor: "", routing: "GEAR-STD" },
+        { include: true, part: "SHAFT-INPUT-500", desc: "Input shaft", type: "MAKE", qty: 1, cost: 88, weight: 12.2, vendor: "", routing: "SHAFT-STD" },
+        { include: true, part: "BRG-6312", desc: "Bearing 6312", type: "BUY", qty: 2, cost: 42, weight: 1.1, vendor: "Applied", routing: "" },
+        { include: true, part: "SEAL-500", desc: "Seal kit", type: "BUY", qty: 1, cost: 36.5, weight: .3, vendor: "Motion", routing: "" },
+        { include: true, part: "BOLT-1/2-13", desc: "Socket head cap screw", type: "BUY", qty: 12, cost: 1.25, weight: .06, vendor: "Fastenal", routing: "" }
+      ];
+      recalculateAll();
+      showToast("Sample gearbox BOM loaded.");
+    }
+
+    function validateBom() {
+      recalculateAll();
+      const count = validateBomRows().filter(Boolean).length;
+      showToast(count ? `${count} BOM warnings found. Fix yellow rows before release.` : "BOM validation passed.");
+    }
+
+    function commitBom() {
+      const count = validateBomRows().filter(Boolean).length;
+      if (count) showToast("BOM saved as draft. Resolve warnings before releasing to production.");
+      else showToast("BOM committed to GBX-500 assembly.");
+    }
+
+    function parseCsv(text) {
+      const lines = text.trim().split(/\r?\n/);
+      const headers = lines[0].split(",").map(h => h.trim().toLowerCase());
+      return lines.slice(1).map(line => {
+        const cells = line.split(",").map(c => c.trim());
+        const obj = {};
+        headers.forEach((h, i) => obj[h] = cells[i] || "");
+        return {
+          include: true,
+          part: obj["part number"] || obj["part"] || obj["part_number"] || "",
+          desc: obj["description"] || "",
+          type: (obj["type"] || "BUY").toUpperCase(),
+          qty: Number(obj["qty"] || obj["quantity"] || 1),
+          cost: Number(obj["cost"] || obj["unit cost"] || obj["unit_material_cost"] || 0),
+          weight: Number(obj["weight"] || obj["weight lbs"] || 0),
+          vendor: obj["vendor"] || "",
+          routing: obj["routing"] || ""
+        }
+      });
+    }
+
+    function handleCsvUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        bomRows = parseCsv(e.target.result);
+        recalculateAll();
+        showToast(`Imported ${bomRows.length} BOM lines from CSV.`);
+      };
+      reader.readAsText(file);
+    }
+
+    function renderRouting() {
+      const tbody = document.querySelector("#routingTable tbody");
+      tbody.innerHTML = "";
+      routingRows.sort((a,b)=>a.step-b.step).forEach((r, i) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><input type="number" value="${r.step}" onchange="routingRows[${i}].step=Number(this.value); recalculateAll();" /></td>
+          <td><select onchange="routingRows[${i}].wc=this.value; recalculateAll();">${machines.map(m => `<option ${m.code===r.wc?"selected":""}>${m.code}</option>`).join("")}</select></td>
+          <td><input value="${r.op}" onchange="routingRows[${i}].op=this.value; recalculateAll();" /></td>
+          <td><input type="number" value="${r.setup}" onchange="routingRows[${i}].setup=Number(this.value); recalculateAll();" /></td>
+          <td><input type="number" value="${r.cycle}" onchange="routingRows[${i}].cycle=Number(this.value); recalculateAll();" /></td>
+          <td><input type="checkbox" ${r.qc ? "checked" : ""} onchange="routingRows[${i}].qc=this.checked; recalculateAll();" /></td>
+          <td><button class="danger" onclick="routingRows.splice(${i},1); recalculateAll();">Remove</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+      renderTraveler();
+    }
+
+    function addRoutingRow() {
+      const nextStep = routingRows.length ? Math.max(...routingRows.map(r=>r.step)) + 10 : 10;
+      routingRows.push({ step: nextStep, wc: "LATHE-01", op: "New operation", setup: 0, cycle: 0, qc: false });
+      recalculateAll();
+      showToast("Routing step added.");
+    }
+
+    function renderMachines() {
+      const tbody = document.querySelector("#machineTable tbody");
+      tbody.innerHTML = "";
+      machines.forEach((m, i) => {
+        const burdened = Number(m.base) * Number(m.coeff);
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><input value="${m.code}" onchange="machines[${i}].code=this.value; recalculateAll();" /></td>
+          <td><input value="${m.name}" onchange="machines[${i}].name=this.value;" /></td>
+          <td><input type="number" value="${m.base}" onchange="machines[${i}].base=Number(this.value); recalculateAll();" /></td>
+          <td><input type="number" step="0.01" value="${m.coeff}" onchange="machines[${i}].coeff=Number(this.value); recalculateAll();" /></td>
+          <td><strong>${money(burdened)}</strong></td>
+          <td><input value="${m.constraint}" onchange="machines[${i}].constraint=this.value;" /></td>
+          <td><button class="danger" onclick="machines.splice(${i},1); recalculateAll();">Remove</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function addMachineRow() {
+      machines.push({ code: "NEW-MACHINE", name: "New Machine", base: 100, coeff: 1.3, constraint: "" });
+      recalculateAll();
+      showToast("Machine added.");
+    }
+
+    function getRate(code) {
+      const m = machines.find(x => x.code === code);
+      if (!m) return 0;
+      return Number(m.base) * Number(m.coeff);
+    }
+
+    function calculateCosts() {
+      const q = Number(document.getElementById("orderQty").value || 1);
+      let buyMaterial = 0;
+      let makeMaterial = 0;
+      let setup = 0;
+      let run = 0;
+      const processRows = [];
+
+      bomRows.filter(r => r.include).forEach(r => {
+        const requiredQty = Number(r.qty) * q;
+        if (r.type === "BUY" || r.type === "OUTSOURCED" || r.type === "SUPPLIED") {
+          buyMaterial += Number(r.cost) * requiredQty;
+        }
+        if (r.type === "MAKE" || r.type === "ASSEMBLY") {
+          let partSetup = 0, partRun = 0;
+          makeMaterial += Number(r.cost) * requiredQty;
+          routingRows.forEach(op => {
+            const s = (Number(op.setup) / 60) * 130;
+            const rc = (Number(op.cycle) / 60) * getRate(op.wc) * requiredQty;
+            partSetup += s;
+            partRun += rc;
+          });
+          setup += partSetup;
+          run += partRun;
+          processRows.push({ part: r.part, qty: requiredQty, setup: partSetup, run: partRun, mat: Number(r.cost) * requiredQty, total: partSetup + partRun + Number(r.cost) * requiredQty });
+        }
+      });
+
+      const assembly = 780;
+      const paint = 320;
+      const pack = 450;
+      const total = buyMaterial + makeMaterial + setup + run + assembly + paint + pack;
+
+      return { q, buyMaterial, makeMaterial, setup, run, assembly, paint, pack, total, processRows };
+    }
+
+    function renderCosts() {
+      const c = calculateCosts();
+      document.getElementById("costQty").textContent = c.q;
+      document.getElementById("travelerQty").textContent = c.q;
+      document.getElementById("buyCost").textContent = money(c.buyMaterial);
+      document.getElementById("makeMatCost").textContent = money(c.makeMaterial);
+      document.getElementById("setupCost").textContent = money(c.setup);
+      document.getElementById("runCost").textContent = money(c.run);
+      document.getElementById("assemblyCost").textContent = money(c.assembly);
+      document.getElementById("paintCost").textContent = money(c.paint);
+      document.getElementById("packCost").textContent = money(c.pack);
+      document.getElementById("grandTotal").textContent = money(c.total);
+      document.getElementById("costTotalMetric").textContent = money(c.total);
+      document.getElementById("costEachMetric").textContent = money(c.total / c.q);
+
+      const tbody = document.querySelector("#processCostTable tbody");
+      tbody.innerHTML = "";
+      c.processRows.forEach(r => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td><strong>${r.part}</strong></td><td>${r.qty}</td><td>${money(r.setup)}</td><td>${money(r.run)}</td><td>${money(r.mat)}</td><td><strong>${money(r.total)}</strong></td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderTraveler() {
+      const tbody = document.querySelector("#travelerTable tbody");
+      tbody.innerHTML = "";
+      routingRows.sort((a,b)=>a.step-b.step).forEach(r => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${r.step}</td><td><strong>${r.wc}</strong></td><td>${r.op}</td><td>${r.setup} min</td><td>${r.cycle} min/pc</td><td><span class="checkbox"></span> ____________</td><td>${r.qc ? '<span class="checkbox"></span> QC Sign' : '-'}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderValidation() {
+      const el = document.getElementById("validationList");
+      const warnings = validateBomRows().filter(Boolean);
+      el.innerHTML = "";
+      if (!warnings.length) {
+        el.innerHTML = `<div class="ok-item">All BOM rows passed basic validation.</div>`;
+        return;
+      }
+      warnings.forEach(w => {
+        const div = document.createElement("div");
+        div.className = "warning-item";
+        div.textContent = w;
+        el.appendChild(div);
+      });
+    }
+
+    function rebuildGantt() {
+      const q = Number(document.getElementById("orderQty").value || 1);
+      const days = ["Jul 2", "Jul 3", "Jul 6", "Jul 7", "Jul 8", "Jul 9", "Jul 10", "Jul 13", "Jul 14", "Jul 15"];
+      const activeMachines = ["LATHE-01", "HOB-01", "SHAPE-01", "QC-01", "HT-OUT", "LATHE-02", "GRIND-01", "QC-FINAL"];
+      const gantt = document.getElementById("gantt");
+      gantt.innerHTML = "";
+
+      const header = document.createElement("div");
+      header.className = "gantt-header";
+      header.innerHTML = `<div>Work Center</div>` + days.map(d => `<div>${d}</div>`).join("");
+      gantt.appendChild(header);
+
+      let cursor = 0.15;
+      const bars = [];
+      routingRows.sort((a,b)=>a.step-b.step).forEach((op, idx) => {
+        const hours = (Number(op.setup) + Number(op.cycle) * q) / 60;
+        const widthDays = Math.max(0.35, hours / 8);
+        const rowIndex = activeMachines.indexOf(op.wc);
+        bars.push({ wc: op.wc, label: `${op.step} ${op.op}`, start: cursor, width: widthDays, color: idx > 5 ? "orange" : (op.qc ? "green" : "blue") });
+        cursor += widthDays + 0.12;
+      });
+
+      activeMachines.forEach(wc => {
+        const row = document.createElement("div");
+        row.className = "gantt-row";
+        row.innerHTML = `<div class="machine">${wc}</div>` + days.map(() => `<div class="cell"></div>`).join("");
+        gantt.appendChild(row);
+
+        bars.filter(b => b.wc === wc).forEach(b => {
+          const bar = document.createElement("div");
+          bar.className = `bar ${b.color}`;
+          bar.style.left = `${170 + b.start * 115}px`;
+          bar.style.width = `${Math.max(80, b.width * 115)}px`;
+          bar.textContent = b.label;
+          row.appendChild(bar);
+        });
+      });
+
+      document.getElementById("finishDate").textContent = cursor > 7 ? "Jul 13" : "Jul 10";
+      document.getElementById("riskText").textContent = cursor > 9 ? "LATE" : "OK";
+      showToast("Schedule recalculated.");
+    }
+
+    function recalculateAll() {
+      renderBom();
+      renderRouting();
+      renderMachines();
+      renderCosts();
+      rebuildGantt();
+    }
+
+    window.onload = () => {
+      recalculateAll();
+    };
+  </script>
+</body>
+</html>
